@@ -1,0 +1,10 @@
+spotipy
+numpy
+tqdm
+opencv-python
+boto3
+dask
+pandas
+torch
+torchvision
+pytz

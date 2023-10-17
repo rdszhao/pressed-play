@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Main Page</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center; /* To center vertically */
+            height: 100vh; /* Full viewport height */
+            margin: 0;
+            transition: background-color 0.5s;
+        }
+        #imageUpload, button {
+            font-family: 'Poppins', sans-serif;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-top: 20px;
+        }
+        #imagePreview {
+            width: 300px;
+            height: 300px;
+            border: 4px solid #ccc;
+            margin-top: 20px;
+            display: none;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .footer {
+            margin-top: 40px;
+            text-align: center; /* For centering text */
+        }
+        .genres {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border-top: 4px solid black;
+            animation: spin 1s linear infinite;
+            display: none; 
+        }
+        ul#genresList {
+            list-style-type: none;
+            padding: 0;  /* Remove default padding */
+        }
+    </style>
+</head>
+<body>
+    <input type="file" id="imageUpload" accept=".png, .jpg, .jpeg">
+    <img id="imagePreview">
+    <button id="generatePlaylist">generate playlist</button>
+    <div id="spinner" class="spinner"></div>
+    <iframe id="spotifyEmbed" width="300" height="380" frameborder="0" allowtransparency="true" allow="encrypted-media" style="display: none; margin-top: 20px;"></iframe>
+    <button id="savePlaylist" style="display: none;">save playlist to profile</button>
+    
+    <!-- Added footer for genres -->
+    <div class="footer">
+        <p>your flavors:</p>
+        <ul id="genresList">
+            {% for genre in genre_list %}
+                <li>{{ genre }}</li>
+            {% endfor %}
+        </ul>
+        <button id="shuffleGenres">mix it up</button>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/color-thief/2.3.0/color-thief.min.js"></script>
+    <script>
+        document.getElementById('imageUpload').addEventListener('change', function() {
+            const file = this.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const imgElement = document.getElementById('imagePreview');
+                    imgElement.setAttribute('src', event.target.result);
+                    imgElement.style.display = 'block';
+                    
+                    imgElement.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d');
+                        canvas.width = imgElement.width;
+                        canvas.height = imgElement.height;
+                        ctx.drawImage(imgElement, 0, 0);
+        
+                        const numberOfSamples = 5;
+                        let gradientColors = [];
+                        const xPos = Math.floor(canvas.width / 2);
+                        
+                        for (let i = 0; i < numberOfSamples; i++) {
+                            const yPos = Math.floor((canvas.height / (numberOfSamples - 1)) * i);
+                            const pixelData = ctx.getImageData(xPos, yPos, 1, 1).data;
+                            gradientColors.push(`rgb(${pixelData[0]}, ${pixelData[1]}, ${pixelData[2]})`);
+                        }
+        
+                        // Construct the gradient string
+                        const gradientBg = `linear-gradient(${gradientColors.join(', ')})`;
+                        document.body.style.background = gradientBg;
+        
+                        // Calculate luminance of the middle color to decide text color
+                        const middlePixelData = ctx.getImageData(xPos, canvas.height / 2, 1, 1).data;
+                        const luminance = (0.299 * middlePixelData[0] + 0.587 * middlePixelData[1] + 0.114 * middlePixelData[2]) / 255;
+                        const textColor = luminance > 0.5 ? 'black' : 'white';
+                        document.body.style.color = textColor;
+                    }
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+
+        document.getElementById('generatePlaylist').addEventListener('click', function() {
+            this.style.display = 'none';
+            document.getElementById('spinner').style.display = 'block';
+            
+            const formData = new FormData();
+            formData.append('image', document.getElementById('imageUpload').files[0]);
+            
+            fetch('/infer/', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Backend returned code ${response.status}, message: ${response.statusText}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (!data.spotifyURI) {
+                    throw new Error('Spotify URI is missing in the response');
+                }
+                document.getElementById('spotifyEmbed').setAttribute('src', data.spotifyURI);
+                document.getElementById('spotifyEmbed').style.display = 'block';
+                document.getElementById('savePlaylist').style.display = 'block';
+        
+                document.getElementById('generatePlaylist').style.display = 'block';
+                document.getElementById('spinner').style.display = 'none';
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('generatePlaylist').style.display = 'block';
+                document.getElementById('spinner').style.display = 'none';
+            });
+        });
+
+        document.getElementById('savePlaylist').addEventListener('click', function() {
+            fetch('/save_playlist/', {
+                method: 'POST',
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Backend returned code ${response.status}, message: ${response.statusText}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                alert("Playlist saved successfully!");
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+
+        document.getElementById('shuffleGenres').addEventListener('click', function() {
+            fetch('/shuffle_genres/', {
+                method: 'GET',
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Backend returned code ${response.status}, message: ${response.statusText}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if(data.genre_list) {
+                    let genreListElement = document.getElementById("genresList");
+                    genreListElement.innerHTML = ""; // Clear current list
+                    data.genre_list.forEach(genre => {
+                        let li = document.createElement("li");
+                        li.textContent = genre;
+                        genreListElement.appendChild(li);
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+    </script>
+</body>
+</html>
