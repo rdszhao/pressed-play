@@ -1,5 +1,6 @@
 spotipy
 numpy
+pandas
 tqdm
 opencv-python
 boto3
@@ -8,3 +9,7 @@ pandas
 torch
 torchvision
 pytz
+bs4
+pipreqs
+sagemaker
+django

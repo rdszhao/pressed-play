@@ -10,7 +10,7 @@ from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
 
 from .spotifile import SpotifyClient
-from inference.inference import model_fn, predict_fn
+from inference.endpoint import model_fn, predict_fn
 
 def login(request):
 	scope = 'user-top-read playlist-modify-private playlist-modify-public ugc-image-upload'

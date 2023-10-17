@@ -4,7 +4,7 @@ import pandas as pd
 import torch
 import torch.optim as optim
 from torch.utils.data import DataLoader
-from inference.vae import VAEAttention, vae_loss, CustomDataset, image_transform, hyperparameters
+from vae import VAEAttention, vae_loss, CustomDataset, image_transform, hyperparameters
 
 def train(epochs, model_dir, train_data_directory, debug=True):
 	all_files = [os.path.join(train_data_directory, file) for file in os.listdir(train_data_directory) if file.endswith('.parquet')]
@@ -39,8 +39,8 @@ def train(epochs, model_dir, train_data_directory, debug=True):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--epochs', type=int, default=5)
+    parser.add_argument('--epochs', type=int, default=100)
     parser.add_argument('--model-dir', type=str, default=os.environ.get('SM_MODEL_DIR'))
     parser.add_argument('--train', type=str, default=os.environ.get('SM_CHANNEL_TRAIN'))
     args = parser.parse_args()
-    train(args.epochs, args.model_dir, args.train)
+    train(args.epochs, args.model_dir, args.train, debug=False)

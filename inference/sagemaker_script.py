@@ -25,7 +25,8 @@ def sagemaker_train():
         framework_version='1.8.1',
         py_version='py3',
         instance_count=1,
-        instance_type='ml.m5.2xlarge',
+        # instance_type='ml.p2.xlarge',
+        instance_type='ml.g4dn.2xlarge',
         hyperparameters={},
         sagemaker_session=sagemaker_session
     )
