@@ -73,7 +73,6 @@ TARGET_FEATURES = [
 ]
 
 model = model_fn(
-    settings.MODEL_LOC_S3,
     settings.AWS_ACCESS_KEY_ID,
     settings.AWS_SECRET_ACCESS_KEY
 )

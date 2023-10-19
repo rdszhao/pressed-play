@@ -15,22 +15,31 @@
             height: 100vh; /* Full viewport height */
             margin: 0;
             transition: background-color 0.5s;
+            background: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url('path_to_your_image.jpg') no-repeat center center fixed;
+            background-size: cover;
+            color: #f1f1f1;
         }
         #imageUpload, button {
             font-family: 'Poppins', sans-serif;
             padding: 10px 20px;
-            border: none;
+            border: 2px solid #f1f1f1;
+            background-color: transparent;
+            color: #f1f1f1;
             cursor: pointer;
             transition: background-color 0.3s;
             margin-top: 20px;
         }
+        #imageUpload:hover, button:hover {
+            background-color: #f1f1f1;
+            color: #333;
+        }
         #imagePreview {
             width: 300px;
             height: 300px;
-            border: 4px solid #ccc;
+            border: 4px solid #f1f1f1;
             margin-top: 20px;
             display: none;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
         }
         .footer {
             margin-top: 40px;
@@ -46,11 +55,11 @@
             100% { transform: rotate(360deg); }
         }
         .spinner {
-            border: 4px solid rgba(0, 0, 0, 0.1);
+            border: 4px solid rgba(255, 255, 255, 0.3);
             width: 20px;
             height: 20px;
             border-radius: 50%;
-            border-top: 4px solid black;
+            border-top: 4px solid #f1f1f1;
             animation: spin 1s linear infinite;
             display: none; 
         }
@@ -58,9 +67,64 @@
             list-style-type: none;
             padding: 0;  /* Remove default padding */
         }
+        ul#genresList li {
+            margin-bottom: 8px;
+            font-style: italic;
+        }
+        .logo-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .logo {
+            font-size: 5em;
+            letter-spacing: 5px;
+            font-weight: 600;
+            margin-bottom: 1px;
+            font-style: italic;
+            background-color: transparent;  /* Set initial value to transparent */
+            -webkit-background-clip: text;  /* Clip the background to the text */
+            color: transparent;             /* Make text transparent so only background shows */
+            border: 2px solid transparent; /* Set initial border color to transparent */
+            padding: 3px;  
+        }
+        .info-link {
+            margin-top: 1px;
+        }
+        
+        .info-link a {
+            text-decoration: none;
+            color: inherit;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: opacity 0.2s;
+        }
+        
+        .info-link a:hover {
+            opacity: 0.8;
+        }
+        
+        .info-link img {
+            width: 14px;
+            height: 14px;
+            background-color: transparent;
+            border: none;
+        }
     </style>
 </head>
 <body>
+    <div class="logo-container">
+        <div class="logo">PRESSED / PLAY</div>
+        <div class="info-link">
+            <a href="https://github.com/rdszhao/pressed-play/blob/main/writeup.ipynb" target="_blank">
+                <img src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png" alt="GitHub Logo">
+                look under the hood - @rdszhao
+                {% comment %} <img src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png" alt="GitHub Logo"> {% endcomment %}
+            </a>
+        </div>
+    </div>
     <input type="file" id="imageUpload" accept=".png, .jpg, .jpeg">
     <img id="imagePreview">
     <button id="generatePlaylist">generate playlist</button>
@@ -113,9 +177,13 @@
         
                         // Calculate luminance of the middle color to decide text color
                         const middlePixelData = ctx.getImageData(xPos, canvas.height / 2, 1, 1).data;
+                        const middleColor = `rgb(${middlePixelData[0]}, ${middlePixelData[1]}, ${middlePixelData[2]})`;
                         const luminance = (0.299 * middlePixelData[0] + 0.587 * middlePixelData[1] + 0.114 * middlePixelData[2]) / 255;
                         const textColor = luminance > 0.5 ? 'black' : 'white';
-                        document.body.style.color = textColor;
+                        {% comment %} document.body.style.color = textColor; {% endcomment %}
+                        document.querySelector('.logo').style.color = textColor;
+                        document.querySelector('.logo').style.borderColor = textColor;
+                        document.querySelector('.logo').style.backgroundColor = middleColor;
                     }
                 }
                 reader.readAsDataURL(file);

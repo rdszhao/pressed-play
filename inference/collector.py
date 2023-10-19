@@ -1,4 +1,5 @@
 from config import envs
+import os
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 from tqdm import tqdm
@@ -9,6 +10,8 @@ RETRY_SLEEP_SECONDS = 5
 
 auth_manager = SpotifyClientCredentials(client_id=envs['SPOTIFY_CLIENT_ID'], client_secret=envs['SPOTIFY_CLIENT_SECRET'])
 spotify = spotipy.Spotify(auth_manager=auth_manager)
+# auth_manager = SpotifyClientCredentials(client_id=os.environ['SPOTIFY_CLIENT_ID'], client_secret=os.environ['SPOTIFY_CLIENT_SECRET'])
+# spotify = spotipy.Spotify(auth_manager=auth_manager)
 
 def fetch_covers(user='spotify', n=float('inf')):
 	i = 0
@@ -59,7 +62,7 @@ def fetch_tracklist_data(tracklist, i):
                 print(f"max retries reached while fetching tracklist data: {e}")
                 return None
 
-RELEVANT_FEATURES = [
+AUDIO_FEATURES = [
 	'acousticness',
 	'danceability',
 	'energy',
@@ -70,21 +73,10 @@ RELEVANT_FEATURES = [
 	'valence'
 ]
 
-RELEVANT_FEATURES = [
-	'acousticness',
-	'danceability',
-	'energy',
-	# 'instrumentalness',
-	'liveness',
-	'loudness',
-	# 'speechiness',
-	'valence'
-]
-
 def get_data(user='spotify', n=float('inf')):
 	covers = fetch_covers(user=user, n=n)
 	pl_ids, covers = (zip(*covers))
 	tracklists = [fetch_track_ids(pl_id) for pl_id in tqdm(pl_ids)]
 	features = [fetch_tracklist_data(t, i) if t else None for i, t in tqdm(enumerate(tracklists))]
-	targets = [[list(map(track.get, RELEVANT_FEATURES)) if track else None for track in tracklist] if tracklist else None for tracklist in tqdm(features)]
+	targets = [[list(map(track.get, AUDIO_FEATURES)) if track else None for track in tracklist] if tracklist else None for tracklist in tqdm(features)]
 	return covers, targets

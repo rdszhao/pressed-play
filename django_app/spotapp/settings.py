@@ -38,9 +38,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-ew)nym+gt6jns&+ldzvhmj%v9eio5omx6lih%f-mr!w%12$l@5'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -82,8 +82,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'spotapp.wsgi.application'
-
+WSGI_APPLICATION = 'django_app.spotapp.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
@@ -141,5 +140,7 @@ SPOTIFY_CLIENT_ID = envs['SPOTIFY_CLIENT_ID']
 SPOTIFY_CLIENT_SECRET = envs['SPOTIFY_CLIENT_SECRET']
 AWS_ACCESS_KEY_ID=envs['AWS_ACCESS_KEY_ID']
 AWS_SECRET_ACCESS_KEY=envs['AWS_SECRET_ACCESS_KEY']
-SPOTIFY_REDIRECT_URI = envs['SPOTIFY_REDIRECT_URI']
-MODEL_LOC_S3 = envs['model_loc_s3']
+SPOTIFY_REDIRECT_URI = os.environ['SPOTIFY_REDIRECT_URI']
+print(SPOTIFY_REDIRECT_URI)
+# SPOTIFY_REDIRECT_URI = envs['SPOTIFY_REDIRECT_URI']
+# print(SPOTIFY_REDIRECT_URI)

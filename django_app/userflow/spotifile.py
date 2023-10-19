@@ -45,7 +45,7 @@ class SpotifyClient:
         mapped_genres = [genre for genre in mapped_genres if genre]
         genre_count = Counter(mapped_genres)
         genres, weights = zip(*genre_count.items())
-        weights = np.array(weights) ** 2
+        weights = np.array(weights) ** 1.5
         sampled_genres = np.random.choice(
             genres, size=min(5, len(genres)), replace=False, p=np.array(weights) / sum(weights)
         ).tolist()

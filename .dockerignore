@@ -1,0 +1,20 @@
+.venv
+.gitignore
+LICENSE
+README.md
+writeup.ipynb
+__pycache__
+*.pyc
+*.pyo
+*.log
+*.sqlite3
+*.db
+*.db-wal
+*.db-shm
+*.DS_Store
+*.egg-info/
+dist/
+build/
+*.egg
+__MACOSX
+Archive 3.zip

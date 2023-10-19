@@ -26,5 +26,6 @@ urlpatterns = [
     path('mainpage/', views.mainpage, name='mainpage'),
     path('infer/', views.infer_image, name='infer_image'),
     path('shuffle_genres/', views.shuffle_genres, name='shuffle_genres'),
+    path('save_playlist/', views.save_playlist, name='save_playlist'),
     re_path(r'^$', RedirectView.as_view(url='login/')),
 ]

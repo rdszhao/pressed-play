@@ -12,7 +12,7 @@ def sagemaker_train():
         region_name='us-east-2'
     )
     sagemaker_session = sagemaker.Session(boto_session=session)
-    role = 'arn:aws:iam::415483028980:role/service-role/AmazonSageMaker-ExecutionRole-20231011T131034'
+    role = os.environ('SAGEMAKER_ROLE')
 
     source_dir = os.path.basename(os.path.dirname(os.path.abspath(__file__)))
     code_location = 's3://coverdata/model_train'
@@ -25,7 +25,6 @@ def sagemaker_train():
         framework_version='1.8.1',
         py_version='py3',
         instance_count=1,
-        # instance_type='ml.p2.xlarge',
         instance_type='ml.g4dn.2xlarge',
         hyperparameters={},
         sagemaker_session=sagemaker_session
