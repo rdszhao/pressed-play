@@ -930,13 +930,13 @@ an image is uploaded, an inference is made, a playlist is created, and we have a
 
 a crucial part of any subjective art technology is user feedback. to do so, I implemented a cute little "like" / "dislike" feedback system on the site that gives either a feedback value of -1 or 1, which we can integrate into our training by switching up the loss function:
 
-original Loss:
+original loss:
 
 $$
 \text{loss} = \text{reconstruction loss} + \text{kl divergence}
 $$
 
-adjusted Loss with RAML:
+adjusted loss with RAML:
 
 $$
 \text{loss} = \text{reconstruction loss} - \lambda \times \text{reward} + \text{kl divergence}
