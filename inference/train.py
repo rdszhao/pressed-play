@@ -22,13 +22,18 @@ def train(epochs, model_dir, train_data_directory, debug=True):
 	
 	print('training begin')
 	for epoch in range(epochs):
-		for images, audio_features in dataloader:
-			images = images.to(device)
-			audio_features = audio_features.to(device)
-
+		for data in dataloader:
+			images = data[0].to(device)
+			audio_features = data[1].to(device)
 			optimizer.zero_grad()
 			recon_audio_features, mu, logvar = model(images)
-			loss = vae_loss(recon_audio_features, audio_features, mu, logvar)
+
+			if len(data) == 3:
+				feedback = data[2].to(device)
+				loss = model.raml_loss(recon_audio_features, audio_features, mu, logvar, reward=feedback)
+			else:
+				loss = vae_loss(recon_audio_features, audio_features, mu, logvar)
+
 			loss.backward()
 			optimizer.step()
 	

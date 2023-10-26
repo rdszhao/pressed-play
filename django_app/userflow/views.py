@@ -2,7 +2,12 @@ import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 
+import numpy as np
+from io import BytesIO
+from PIL import Image
+import boto3
 import requests
+import json
 import base64
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
@@ -77,15 +82,32 @@ model = model_fn(
     settings.AWS_SECRET_ACCESS_KEY
 )
 
+import boto3
+
+def get_dynamodb_table(table_name):
+	dynamodb = boto3.resource(
+						'dynamodb', 
+						region_name=settings.AWS_REGION_NAME, 
+						aws_access_key_id=settings.AWS_ACCESS_KEY_ID, 
+						aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY
+	)
+	return dynamodb.Table(table_name)
+
+img_buffer = [0]
+
 @csrf_exempt
 def infer_image(request):
 	if request.method == "POST":
 		client = SpotifyClient(request.session['access_token'])
 		image = request.FILES['image'].read()
+		img_buffer[0] = image
 		result = predict_fn(image, model)
+		request.session['prediction'] = result
 		print(result)
+
 		features = dict(zip(TARGET_FEATURES, result))
-		spotify_uri = client.create_playlist(request, features)
+		spotify_uri, plid = client.create_playlist(request, features)
+		request.session['created_playlist_id'] = plid
 		return JsonResponse({'spotifyURI': spotify_uri})
 
 	return JsonResponse({'error': 'Only POST requests are allowed'})
@@ -95,6 +117,54 @@ def save_playlist(request):
 	if request.method == "POST":
 		if 'created_playlist_id' in request.session:
 			del request.session['created_playlist_id']
-		return JsonResponse({'status': 'Playlist saved successfully'})
+		return JsonResponse({'status': 'playlist saved successfully'})
 
 	return JsonResponse({'error': 'Only POST requests are allowed'}, status=405)
+
+def put_to_dynamo(table, id: str, image_data: bytes, prediction: bytes, feedback: str):
+	table.put_item(
+		Item={
+			'id': id,
+			'image_data': image_data,
+			'prediction': prediction,
+			'feedback': feedback
+		}
+	)
+
+def compress_img(image_data: bytes) -> bytes:
+	image = Image.open(BytesIO(image_data))
+	quality = 90
+	while quality > 10:  # Ensure we don't loop indefinitely
+		buffer = BytesIO()
+		image.save(buffer, format="JPEG", quality=quality)
+		if len(buffer.getvalue()) <= 250 * 1024:
+			return buffer.getvalue()
+		quality -= 5
+	return buffer.getvalue()
+
+dynamodb = boto3.resource(
+	'dynamodb',
+	aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+	aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+	region_name='us-east-2'
+)	
+table = dynamodb.Table('feedback')
+
+@csrf_exempt
+def feedback(request):
+	if request.method == 'POST':
+		feedback_data = json.loads(request.body)
+		feedback = str(feedback_data.get('feedback', None))
+		plid = str(request.session.get('created_playlist_id', None))
+		prediction = np.array(request.session['prediction']).tostring()
+		image_bytes = compress_img(img_buffer[0])
+
+		put_to_dynamo(
+			table,
+			id=plid,
+			image_data=image_bytes,
+			prediction=prediction,
+			feedback=feedback
+		)
+		img_buffer[0] = None
+	return JsonResponse({'status': 'success'})

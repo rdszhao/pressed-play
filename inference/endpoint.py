@@ -1,8 +1,8 @@
 import boto3
 from io import BytesIO
+from PIL import Image
 import torch
 from inference.vae import VAEAttention, image_transform
-from PIL import Image
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 

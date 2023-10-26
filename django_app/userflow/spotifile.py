@@ -63,7 +63,7 @@ class SpotifyClient:
         user_id = request.session['user_id']
         pst = pytz.timezone('America/Los_Angeles')
         current_time = datetime.datetime.now(pst).strftime('%Y-%m-%d %H:%M:%S')
-        description = f"made w love by ray. created on {current_time}"
+        description = f"made w love by ray. created {current_time}"
         playlist = self.sp.user_playlist_create(user=user_id, name='im.playlist', public=True, description=description)
         self.sp.playlist_add_items(playlist_id=playlist['id'], items=track_uris)
 
@@ -72,7 +72,8 @@ class SpotifyClient:
         self.sp.playlist_upload_cover_image(playlist_id=playlist['id'], image_b64=image_base64)
 
         spotify_uri = f"https://open.spotify.com/embed/playlist/{playlist['id']}"
-        return spotify_uri
+        plid = playlist['id']
+        return spotify_uri, plid
 
 def compress64(image, quality=85):
     img_pil = Image.open(image)

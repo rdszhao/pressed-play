@@ -30,6 +30,8 @@ class VAEAttention(nn.Module):
 
 		self.hidden_size = 128 * (image_size[1] // 8) * (image_size[2] // 8)
 
+		self.lam = 0.1
+
 		self.attention = nn.Sequential(
 			nn.Conv2d(128, 1, kernel_size=1),
 			nn.Softmax(dim=2)
@@ -58,17 +60,27 @@ class VAEAttention(nn.Module):
 	def decode(self, z):
 		return self.decoder(z)
 
-	def forward(self, x):
-		mu, logvar = self.encode(x)
-		z = self.reparameterize(mu, logvar)
-		recon_features = self.decode(z)
-		return recon_features, mu, logvar
+	def forward(self, x, reward=None):
+			mu, logvar = self.encode(x)
+			z = self.reparameterize(mu, logvar)
+			recon_features = self.decode(z)
+			if reward is not None:
+				loss = self.raml_loss(x, recon_features, mu, logvar, reward)
+				return recon_features, loss
+			return recon_features, mu, logvar
+
+	def raml_loss(self, x, recon_x, mu, logvar, reward):
+		BCE = F.binary_cross_entropy(recon_x, x, reduction='sum')
+		KLD = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
+		adjusted_loss = BCE + KLD - self.lamb * reward
+		return adjusted_loss
 
 def vae_loss(recon_features, features, mu, logvar):
 	reconstruction_loss = F.mse_loss(recon_features, features, reduction='sum')
 	kl_divergence_loss = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
 	total_loss = reconstruction_loss + kl_divergence_loss
 	return total_loss
+
 
 class CustomDataset(Dataset):
 	def __init__(self, data, transform=None):
@@ -84,6 +96,9 @@ class CustomDataset(Dataset):
 		if self.transform:
 			image = self.transform(image)
 		audio = torch.tensor(audio_features, dtype=torch.float32)
+		feedback = self.data.iloc[idx].get('feedback', None)
+		if feedback is not None:
+			return image, audio, feedback
 		return image, audio
 
 image_transform = transforms.Compose([

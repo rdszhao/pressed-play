@@ -38,7 +38,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-ew)nym+gt6jns&+ldzvhmj%v9eio5omx6lih%f-mr!w%12$l@5'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
@@ -140,7 +140,7 @@ SPOTIFY_CLIENT_ID = envs['SPOTIFY_CLIENT_ID']
 SPOTIFY_CLIENT_SECRET = envs['SPOTIFY_CLIENT_SECRET']
 AWS_ACCESS_KEY_ID=envs['AWS_ACCESS_KEY_ID']
 AWS_SECRET_ACCESS_KEY=envs['AWS_SECRET_ACCESS_KEY']
-SPOTIFY_REDIRECT_URI = os.environ['SPOTIFY_REDIRECT_URI']
+# SPOTIFY_REDIRECT_URI = os.environ['SPOTIFY_REDIRECT_URI']
+SPOTIFY_REDIRECT_URI = envs['SPOTIFY_REDIRECT_URI']
 print(SPOTIFY_REDIRECT_URI)
-# SPOTIFY_REDIRECT_URI = envs['SPOTIFY_REDIRECT_URI']
 # print(SPOTIFY_REDIRECT_URI)

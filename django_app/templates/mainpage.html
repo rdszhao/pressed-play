@@ -17,6 +17,7 @@
             transition: background-color 0.5s;
             background: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url('path_to_your_image.jpg') no-repeat center center fixed;
             background-size: cover;
+            {% comment %} background-color: #c3ecb9:  {% endcomment %}
             color: #f1f1f1;
         }
         #imageUpload, button {
@@ -83,11 +84,8 @@
             font-weight: 600;
             margin-bottom: 1px;
             font-style: italic;
-            background-color: transparent;  /* Set initial value to transparent */
-            -webkit-background-clip: text;  /* Clip the background to the text */
-            color: transparent;             /* Make text transparent so only background shows */
-            border: 2px solid transparent; /* Set initial border color to transparent */
-            padding: 3px;  
+            background-color: transparent;  /* This ensures no background color */
+            padding: 2px;  
         }
         .info-link {
             margin-top: 1px;
@@ -131,6 +129,8 @@
     <div id="spinner" class="spinner"></div>
     <iframe id="spotifyEmbed" width="300" height="380" frameborder="0" allowtransparency="true" allow="encrypted-media" style="display: none; margin-top: 20px;"></iframe>
     <button id="savePlaylist" style="display: none;">save playlist to profile</button>
+    <button id="likeButton" style="display: none; margin-right: 5px;">👍</button>
+    <button id="dislikeButton" style="display: none;">👎</button>
     
     <!-- Added footer for genres -->
     <div class="footer">
@@ -189,11 +189,55 @@
                 reader.readAsDataURL(file);
             }
         });
+        document.getElementById('likeButton').addEventListener('click', function() {
+            sendFeedback(1);
+            disableFeedbackButtons();
+        });
+
+        document.getElementById('dislikeButton').addEventListener('click', function() {
+            sendFeedback(-1);
+            disableFeedbackButtons();
+        });
+
+        function sendFeedback(value) {
+            fetch('/feedback/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({feedback: value})
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Backend returned code ${response.status}, message: ${response.statusText}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.status === "success") {
+                    alert("ty for the feedback!");
+                } else {
+                    throw new Error('Unexpected response from server.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+
+        function disableFeedbackButtons() {
+            document.getElementById('likeButton').disabled = true;
+            document.getElementById('dislikeButton').disabled = true;
+        }
 
         document.getElementById('generatePlaylist').addEventListener('click', function() {
             this.style.display = 'none';
             document.getElementById('spinner').style.display = 'block';
-            
+            document.getElementById('likeButton').style.display = 'inline-block';  // Show like button
+            document.getElementById('dislikeButton').style.display = 'inline-block';  // Show dislike button
+            document.getElementById('likeButton').disabled = false;  // Enable like button
+            document.getElementById('dislikeButton').disabled = false;
+
             const formData = new FormData();
             formData.append('image', document.getElementById('imageUpload').files[0]);
             

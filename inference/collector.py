@@ -1,17 +1,18 @@
-from config import envs
 import os
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 from tqdm import tqdm
 import time
 
+# from config import envs
+
 MAX_RETRIES = 3
 RETRY_SLEEP_SECONDS = 5
 
-auth_manager = SpotifyClientCredentials(client_id=envs['SPOTIFY_CLIENT_ID'], client_secret=envs['SPOTIFY_CLIENT_SECRET'])
-spotify = spotipy.Spotify(auth_manager=auth_manager)
-# auth_manager = SpotifyClientCredentials(client_id=os.environ['SPOTIFY_CLIENT_ID'], client_secret=os.environ['SPOTIFY_CLIENT_SECRET'])
+# auth_manager = SpotifyClientCredentials(client_id=envs['SPOTIFY_CLIENT_ID'], client_secret=envs['SPOTIFY_CLIENT_SECRET'])
 # spotify = spotipy.Spotify(auth_manager=auth_manager)
+auth_manager = SpotifyClientCredentials(client_id=os.environ['SPOTIFY_CLIENT_ID'], client_secret=os.environ['SPOTIFY_CLIENT_SECRET'])
+spotify = spotipy.Spotify(auth_manager=auth_manager)
 
 def fetch_covers(user='spotify', n=float('inf')):
 	i = 0
