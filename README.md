@@ -1007,4 +1007,4 @@ ___
 
 And that's it! all the steps and intuitions behind this explained. Pretty cool, right?
 
-And if you want to get hands on with my toy, you can visit it [here](pressedplay.rdszhao.com) at pressedplay.rdszhao.com. You just need a Spotify account. If you're interested, email me at [rdszhao@gmail.com](rdszhao@gmail.com) to try it out, and you can find all the code [here](https://github.com/rdszhao/pressed-play) Thanks for reading, and cheers!
+And if you want to get hands on with my toy, you can visit it [here](pressedplay.rdszhao.com) at pressedplay.rdszhao.com. You just need a Spotify account. If you're interested, email me at [rdszhao@gmail.com](rdszhao@gmail.com) to try it out. Thanks for reading, and cheers!
